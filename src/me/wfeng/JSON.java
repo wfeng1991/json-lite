@@ -1,5 +1,8 @@
 package me.wfeng;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by wfeng on 2018/01/14.
  */
@@ -7,32 +10,24 @@ public class JSON {
 
     private static int position;
 
+    private static Map<String,Object> NULL_OR_BOOLEAN=new HashMap(){
+        {
+            put("null",null);
+            put("false",false);
+            put("true",true);
+        }
+    };
+
     public static Object parse(String json){
-        position =0;
+        position = 0;
         if(json==null){
             return null;
         }else if(json.trim().matches("^(-?\\d+)(\\.\\d+)?$")){
-           try {
-               Long val = Long.parseLong(json.trim());
-               if(val.byteValue()==val){
-                   return val.byteValue();
-               }else if(val.shortValue()==val){
-                   return val.shortValue();
-               }else if(val.intValue()==val){
-                   return val.intValue();
-               }else{
-                   return val;
-               }
-           }catch (NumberFormatException e){
-               return Double.parseDouble(json.trim());
-           }
-        }else if(!json.trim().startsWith("{") &&  !json.trim().startsWith("[")){
-            if("null".equalsIgnoreCase(json.trim())){
-                return null;
-            }else if("false".equalsIgnoreCase(json.trim())){
-                return Boolean.FALSE;
-            }else if("true".equalsIgnoreCase(json.trim())){
-                return Boolean.TRUE;
+            return parseNumber(json.trim());
+        }else if(!json.trim().startsWith("{") && !json.trim().startsWith("[")){
+            json = json.trim().toLowerCase();
+            if (NULL_OR_BOOLEAN.containsKey(json)){
+                return NULL_OR_BOOLEAN.get(json);
             }else{
                 return json.trim();
             }
@@ -91,28 +86,7 @@ public class JSON {
                         }
                     case ',':
                         position--;
-                        if("null".equalsIgnoreCase(sb.toString())){
-                            return null;
-                        }else if("false".equalsIgnoreCase(sb.toString())){
-                            return Boolean.FALSE;
-                        }else if("true".equalsIgnoreCase(sb.toString())){
-                            return Boolean.TRUE;
-                        }else{
-                            try {
-                                Long val = Long.parseLong(sb.toString());
-                                if(val.byteValue()==val){
-                                    return val.byteValue();
-                                }else if(val.shortValue()==val){
-                                    return val.shortValue();
-                                }else if (val.intValue()==val){
-                                    return val.intValue();
-                                } else {
-                                    return val;
-                                }
-                            } catch (Exception e){
-                                return Double.parseDouble(sb.toString());
-                            }
-                        }
+                        return parseFundamentalType(sb.toString());
                     case '"':
                     case '\'':
                         char ch=nextChar(json);
@@ -163,7 +137,7 @@ public class JSON {
                     default:
                         if (c=='}'||c==']'){
                             position--;
-                            return sb.toString();
+                            return parseFundamentalType(sb.toString());
                         }else{
                             sb.append(c);
                         }
@@ -173,6 +147,31 @@ public class JSON {
             e.printStackTrace();
         }
         throw new RuntimeException("json format error at position: "+ position);
+    }
+
+    private static Object parseFundamentalType(String str) {
+        if (NULL_OR_BOOLEAN.containsKey(str.toLowerCase())){
+            return NULL_OR_BOOLEAN.get(str.toLowerCase());
+        }else{
+            return parseNumber(str);
+        }
+    }
+
+    private static Object parseNumber(String s) {
+        try {
+            Long val = Long.parseLong(s);
+            if (val.byteValue() == val) {
+                return val.byteValue();
+            } else if (val.shortValue() == val) {
+                return val.shortValue();
+            } else if (val.intValue() == val) {
+                return val.intValue();
+            } else {
+                return val;
+            }
+        } catch (Exception e) {
+            return Double.parseDouble(s);
+        }
     }
 
     private static char nextChar(String json) throws ArrayIndexOutOfBoundsException{
