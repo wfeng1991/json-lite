@@ -9,5 +9,7 @@ public class Main {
         System.out.println(jsonObject);
         Object o=JSON.parse("{'a':1.23,'b':[1.1,2,{'c':121,'d':null},{'e':false}]}");
         System.out.println(o);
+        o=JSON.parse("\"nn\nn\"");
+        System.out.println(o);
     }
 }

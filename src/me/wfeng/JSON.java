@@ -24,12 +24,12 @@ public class JSON {
             throw new RuntimeException("null value");
         } else if (json.trim().matches("^(-?\\d+)(\\.\\d+)?$")) {
             return parseNumber(json.trim());
-        } else if (!json.trim().startsWith("{") && !json.trim().startsWith("[")) {
+        } else if ("{[\"'".indexOf(json.trim().charAt(0))==-1) {
             json = json.trim().toLowerCase();
             if (NULL_OR_BOOLEAN.containsKey(json)) {
                 return NULL_OR_BOOLEAN.get(json);
-            } else {
-                return json.trim();
+            } else  {
+                throw new RuntimeException("json formot error, value is illegal");
             }
         } else {
             return nextValue(json);
