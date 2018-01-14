@@ -1,16 +1,14 @@
 package me.wfeng;
 
-import java.text.ParseException;
-
 /**
  * Created by wfeng on 2018/01/14.
  */
 public class JSON {
 
-    private static int ptr;
+    private static int position;
 
     public static Object parse(String json){
-        ptr=0;
+        position =0;
         if(json==null){
             return null;
         }else if(json.trim().matches("^(-?\\d+)(\\.\\d+)?$")){
@@ -29,11 +27,11 @@ public class JSON {
                return Double.parseDouble(json.trim());
            }
         }else if(!json.trim().startsWith("{") &&  !json.trim().startsWith("[")){
-            if("null".equalsIgnoreCase(json.trim().toString())){
+            if("null".equalsIgnoreCase(json.trim())){
                 return null;
-            }else if("false".equalsIgnoreCase(json.trim().toString())){
+            }else if("false".equalsIgnoreCase(json.trim())){
                 return Boolean.FALSE;
-            }else if("true".equalsIgnoreCase(json.trim().toString())){
+            }else if("true".equalsIgnoreCase(json.trim())){
                 return Boolean.TRUE;
             }else{
                 return json.trim();
@@ -45,7 +43,7 @@ public class JSON {
 
     private static Object nextValue(String json){
         try{
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             while (true){
                 char c = nextChar(json);
                 switch (c){
@@ -54,45 +52,45 @@ public class JSON {
                         if (nextChar(json)=='}'){
                             return jsonObject;
                         }
-                        ptr--;
+                        position--;
                         String key = (String) nextValue(json);
                         if(nextChar(json)==':') {
                             jsonObject.put(key,nextValue(json));
                         }else{
-                            throw new RuntimeException("jsonObject format error at position: "+ptr);
+                            throw new RuntimeException("jsonObject format error at position: "+ position);
                         }
                         while (nextChar(json)==','){
                             key = (String) nextValue(json);
                             if(nextChar(json)==':') {
                                 jsonObject.put(key,nextValue(json));
                             }else{
-                                throw new RuntimeException("jsonObject format error at position: "+ptr);
+                                throw new RuntimeException("jsonObject format error at position: "+ position);
                             }
                         }
-                        ptr--;
+                        position--;
                         if (nextChar(json)=='}'){
                             return jsonObject;
                         }else{
-                            throw new RuntimeException("jsonObject format error at position: "+ptr);
+                            throw new RuntimeException("jsonObject format error at position: "+ position);
                         }
                     case '[':
                         JSONArray jsonArray =new JSONArray();
                         if(nextChar(json)==']'){
                             return jsonArray;
                         }
-                        ptr--;
+                        position--;
                         jsonArray.add(nextValue(json));
                         while (nextChar(json)==','){
                             jsonArray.add(nextValue(json));
                         }
-                        ptr--;
+                        position--;
                         if(nextChar(json)==']'){
                             return jsonArray;
                         }else{
-                            throw new RuntimeException("jsonArray format error at position: "+ptr);
+                            throw new RuntimeException("jsonArray format error at position: "+ position);
                         }
                     case ',':
-                        ptr--;
+                        position--;
                         if("null".equalsIgnoreCase(sb.toString())){
                             return null;
                         }else if("false".equalsIgnoreCase(sb.toString())){
@@ -164,7 +162,7 @@ public class JSON {
                         return sb.toString();
                     default:
                         if (c=='}'||c==']'){
-                            ptr--;
+                            position--;
                             return sb.toString();
                         }else{
                             sb.append(c);
@@ -174,13 +172,13 @@ public class JSON {
         }catch (Exception e){
             e.printStackTrace();
         }
-        throw new RuntimeException("json format error at position: "+ptr);
+        throw new RuntimeException("json format error at position: "+ position);
     }
 
     private static char nextChar(String json) throws ArrayIndexOutOfBoundsException{
-        while (json.charAt(ptr)==' ')
-            ptr++;
-        return json.charAt(ptr++);
+        while (json.charAt(position)==' ')
+            position++;
+        return json.charAt(position++);
     }
 
 }
