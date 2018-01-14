@@ -108,6 +108,9 @@ public class JSON {
                                     case '\'':
                                         sb.append('\'');
                                         break;
+                                    case '\\':
+                                        sb.append('\\');
+                                        break;
                                     case '"':
                                         sb.append('\"');
                                         break;
