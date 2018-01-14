@@ -10,89 +10,89 @@ public class JSON {
 
     private static int position;
 
-    private static Map<String,Object> NULL_OR_BOOLEAN=new HashMap(){
+    private static Map<String, Object> NULL_OR_BOOLEAN = new HashMap() {
         {
-            put("null",null);
-            put("false",false);
-            put("true",true);
+            put("null", null);
+            put("false", false);
+            put("true", true);
         }
     };
 
-    public static Object parse(String json){
+    public static Object parse(String json) {
         position = 0;
-        if(json==null){
-            return null;
-        }else if(json.trim().matches("^(-?\\d+)(\\.\\d+)?$")){
+        if (json == null) {
+            throw new RuntimeException("null value");
+        } else if (json.trim().matches("^(-?\\d+)(\\.\\d+)?$")) {
             return parseNumber(json.trim());
-        }else if(!json.trim().startsWith("{") && !json.trim().startsWith("[")){
+        } else if (!json.trim().startsWith("{") && !json.trim().startsWith("[")) {
             json = json.trim().toLowerCase();
-            if (NULL_OR_BOOLEAN.containsKey(json)){
+            if (NULL_OR_BOOLEAN.containsKey(json)) {
                 return NULL_OR_BOOLEAN.get(json);
-            }else{
+            } else {
                 return json.trim();
             }
-        }else{
+        } else {
             return nextValue(json);
         }
     }
 
-    private static Object nextValue(String json){
-        try{
+    private static Object nextValue(String json) {
+        try {
             StringBuilder sb = new StringBuilder();
-            while (true){
+            while (true) {
                 char c = nextChar(json);
-                switch (c){
+                switch (c) {
                     case '{':
                         JSONObject jsonObject = new JSONObject();
-                        if (nextChar(json)=='}'){
+                        if (nextChar(json) == '}') {
                             return jsonObject;
                         }
                         position--;
                         String key = (String) nextValue(json);
-                        if(nextChar(json)==':') {
-                            jsonObject.put(key,nextValue(json));
-                        }else{
-                            throw new RuntimeException("jsonObject format error at position: "+ position);
+                        if (nextChar(json) == ':') {
+                            jsonObject.put(key, nextValue(json));
+                        } else {
+                            throw new RuntimeException("jsonObject format error at position: " + position);
                         }
-                        while (nextChar(json)==','){
+                        while (nextChar(json) == ',') {
                             key = (String) nextValue(json);
-                            if(nextChar(json)==':') {
-                                jsonObject.put(key,nextValue(json));
-                            }else{
-                                throw new RuntimeException("jsonObject format error at position: "+ position);
+                            if (nextChar(json) == ':') {
+                                jsonObject.put(key, nextValue(json));
+                            } else {
+                                throw new RuntimeException("jsonObject format error at position: " + position);
                             }
                         }
                         position--;
-                        if (nextChar(json)=='}'){
+                        if (nextChar(json) == '}') {
                             return jsonObject;
-                        }else{
-                            throw new RuntimeException("jsonObject format error at position: "+ position);
+                        } else {
+                            throw new RuntimeException("jsonObject format error at position: " + position);
                         }
                     case '[':
-                        JSONArray jsonArray =new JSONArray();
-                        if(nextChar(json)==']'){
+                        JSONArray jsonArray = new JSONArray();
+                        if (nextChar(json) == ']') {
                             return jsonArray;
                         }
                         position--;
                         jsonArray.add(nextValue(json));
-                        while (nextChar(json)==','){
+                        while (nextChar(json) == ',') {
                             jsonArray.add(nextValue(json));
                         }
                         position--;
-                        if(nextChar(json)==']'){
+                        if (nextChar(json) == ']') {
                             return jsonArray;
-                        }else{
-                            throw new RuntimeException("jsonArray format error at position: "+ position);
+                        } else {
+                            throw new RuntimeException("jsonArray format error at position: " + position);
                         }
                     case ',':
                         position--;
                         return parseFundamentalType(sb.toString());
                     case '"':
                     case '\'':
-                        char ch=nextChar(json);
-                        while (ch!='"' && ch!='\''){
-                            if (ch=='\\'){
-                                switch (nextChar(json)){
+                        char ch = nextChar(json);
+                        while (ch != '"' && ch != '\'') {
+                            if (ch == '\\') {
+                                switch (nextChar(json)) {
                                     case 'b':
                                         sb.append('\b');
                                         break;
@@ -128,31 +128,31 @@ public class JSON {
                                         sb.append((char) num);
                                         break;
                                 }
-                            }else {
+                            } else {
                                 sb.append(ch);
                             }
                             ch = nextChar(json);
                         }
                         return sb.toString();
                     default:
-                        if (c=='}'||c==']'){
+                        if (c == '}' || c == ']') {
                             position--;
                             return parseFundamentalType(sb.toString());
-                        }else{
+                        } else {
                             sb.append(c);
                         }
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        throw new RuntimeException("json format error at position: "+ position);
+        throw new RuntimeException("json format error at position: " + position);
     }
 
     private static Object parseFundamentalType(String str) {
-        if (NULL_OR_BOOLEAN.containsKey(str.toLowerCase())){
+        if (NULL_OR_BOOLEAN.containsKey(str.toLowerCase())) {
             return NULL_OR_BOOLEAN.get(str.toLowerCase());
-        }else{
+        } else {
             return parseNumber(str);
         }
     }
@@ -174,8 +174,8 @@ public class JSON {
         }
     }
 
-    private static char nextChar(String json) throws ArrayIndexOutOfBoundsException{
-        while (json.charAt(position)==' ')
+    private static char nextChar(String json) throws ArrayIndexOutOfBoundsException {
+        while (json.charAt(position) == ' ')
             position++;
         return json.charAt(position++);
     }
