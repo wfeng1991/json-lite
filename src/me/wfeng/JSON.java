@@ -20,8 +20,8 @@ public class JSON {
 
     public static Object parse(String json) {
         position = 0;
-        if (json == null) {
-            throw new RuntimeException("null value");
+        if (json == null || "".equals(json.trim())) {
+            throw new RuntimeException("null or empty string.");
         } else if (json.trim().matches("^(-?\\d+)(\\.\\d+)?$")) {
             return parseNumber(json.trim());
         } else if ("{[\"'".indexOf(json.trim().charAt(0))==-1) {
@@ -48,20 +48,14 @@ public class JSON {
                             return jsonObject;
                         }
                         position--;
-                        String key = (String) nextValue(json);
-                        if (nextChar(json) == ':') {
-                            jsonObject.put(key, nextValue(json));
-                        } else {
-                            throw new RuntimeException("jsonObject format error at position: " + position);
-                        }
-                        while (nextChar(json) == ',') {
-                            key = (String) nextValue(json);
+                        do {
+                            Object key = nextValue(json);
                             if (nextChar(json) == ':') {
                                 jsonObject.put(key, nextValue(json));
                             } else {
                                 throw new RuntimeException("jsonObject format error at position: " + position);
                             }
-                        }
+                        }while (nextChar(json) == ',');
                         position--;
                         if (nextChar(json) == '}') {
                             return jsonObject;
@@ -74,10 +68,9 @@ public class JSON {
                             return jsonArray;
                         }
                         position--;
-                        jsonArray.add(nextValue(json));
-                        while (nextChar(json) == ',') {
+                        do  {
                             jsonArray.add(nextValue(json));
-                        }
+                        }while (nextChar(json) == ',');
                         position--;
                         if (nextChar(json) == ']') {
                             return jsonArray;
