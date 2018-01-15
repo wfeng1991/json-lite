@@ -142,9 +142,9 @@ public class JSONDeserializer {
     private static <T> Object newMapOrList(Class<T> cls) {
         T t = null;
         if (cls.isInterface()) {
-            if (implClassOfInterface(cls, Map.class)) {
+            if (cls == Map.class) {
                 return new HashMap<>();
-            } else if (implClassOfInterface(cls, Collection.class)) {
+            } else if (isChildOfInterface(cls, Collection.class)) {
                 return new ArrayList<>();
             } else {
                 new RuntimeException("can not new instance.");
@@ -161,7 +161,7 @@ public class JSONDeserializer {
         return t;
     }
 
-    private static boolean implClassOfInterface(Class iml, Class inter) {
+    private static boolean isChildOfInterface(Class iml, Class inter) {
         Class[] interfaces = iml.getInterfaces();
         for (Class cls : interfaces) {
             if (cls == inter) {
