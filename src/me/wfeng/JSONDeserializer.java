@@ -171,7 +171,4 @@ public class JSONDeserializer {
         return iml == inter;
     }
 
-    public static void main(String[] arg) throws Exception {
-
-    }
 }
