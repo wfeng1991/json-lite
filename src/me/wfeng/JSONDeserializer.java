@@ -8,7 +8,7 @@ import java.util.*;
 
 public class JSONDeserializer {
 
-    public static <T> T fromJson(String json,Class<T> cls) throws InstantiationException, IllegalAccessException {
+    public static <T> T fromJson(String json,Class<T> cls) {
         if (cls==Boolean.class||cls==boolean.class){
             return (T)Boolean.valueOf(json.trim());
         }else if(cls==Integer.class||cls==int.class){
@@ -31,7 +31,7 @@ public class JSONDeserializer {
         }
     }
 
-    private static <T> T deserialize(Object jsonObject, Class<T> cls) throws IllegalAccessException {
+    private static <T> T deserialize(Object jsonObject, Class<T> cls) {
 
         if(jsonObject==null){
             return null;
@@ -68,6 +68,8 @@ public class JSONDeserializer {
         try {
             t = cls.newInstance();
         } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
         for (Field f:fields){
@@ -118,7 +120,11 @@ public class JSONDeserializer {
             }else {
                 value=obj;
             }
-            f.set(t,value);
+            try {
+                f.set(t,value);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
         return t;
     }
