@@ -77,9 +77,6 @@ public class JSON {
                         } else {
                             throw new RuntimeException("jsonArray format error at position: " + position);
                         }
-                    case ',':
-                        position--;
-                        return parseFundamentalType(sb.toString());
                     case '"':
                     case '\'':
                         char ch = nextChar(json);
@@ -131,7 +128,7 @@ public class JSON {
                         }
                         return sb.toString();
                     default:
-                        if (c == '}' || c == ']') {
+                        if (c == '}' || c == ']' || c== ',') {
                             position--;
                             return parseFundamentalType(sb.toString());
                         } else {
