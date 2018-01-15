@@ -101,8 +101,6 @@ public class JSONDeserializer {
                 value = collection;
             } else if (Map.class.isAssignableFrom(declaringClass)) {
                 Map m = (Map) newMapOrList(declaringClass);
-                JSONObject jsonObj = (JSONObject) obj;
-                Iterator<Map.Entry> iterator = jsonObj.entrySet().iterator();
                 Class genericType0 = Object.class;
                 Class genericType1 = Object.class;
                 try {
@@ -110,6 +108,8 @@ public class JSONDeserializer {
                     genericType1 = (Class) ((ParameterizedType) f.getGenericType()).getActualTypeArguments()[1];
                 } catch (Exception ignore) {
                 }
+                JSONObject jsonObj = (JSONObject) obj;
+                Iterator<Map.Entry> iterator = jsonObj.entrySet().iterator();
                 while (iterator.hasNext()) {
                     Map.Entry entry = iterator.next();
                     m.put(deserialize(entry.getKey(), genericType0), deserialize(entry.getValue(), genericType1));
