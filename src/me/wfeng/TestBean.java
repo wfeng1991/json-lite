@@ -4,20 +4,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class TestClass {
+public class TestBean {
 
     private Map<Map<String,String>,String> map;
 
     private int count;
 
-    private List<List<TestClass>> list;
+    private List<List<TestBean>> list;
 
     private boolean[] booleans;
 
 
     @Override
     public String toString() {
-        return "TestClass{" +
+        return "TestBean{" +
                 "map=" + map +
                 ", count=" + count +
                 ", list=" + list +
