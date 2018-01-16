@@ -51,7 +51,9 @@ public class JSONSerializer {
                     }
                     Class<?> fieldClass = f.getType();
                     Object value = f.get(object);
-                    if (fieldClass.isArray()) {
+                    if (value==null){
+                        sb.append(serialize(f.getName())+":"+serialize(value)+",");
+                    }else if (fieldClass.isArray()) {
                         try{
                             sb.append(serialize(f.getName())+":"+serializeArray((Object[])value)+",");
                         }catch (Exception ingore){
