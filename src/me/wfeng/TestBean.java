@@ -11,7 +11,7 @@ public class TestBean {
     private int count;
 
     private List<List<TestBean>> list;
-
+    @JsonIngore
     private boolean[] booleans;
 
 

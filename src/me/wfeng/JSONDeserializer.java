@@ -4,9 +4,13 @@ package me.wfeng;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class JSONDeserializer {
+
+    static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static <T> T fromJson(String json, Class<T> cls) {
         if (cls == Boolean.class || cls == boolean.class) {
@@ -19,7 +23,14 @@ public class JSONDeserializer {
             return (T) Byte.valueOf(json.trim());
         } else if (cls == Short.class || cls == short.class) {
             return (T) Short.valueOf(json.trim());
-        } else {
+        }else if (Date.class.isAssignableFrom(cls)) {
+            try {
+                return (T) sdf.parse(json.trim());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }else {
             Object jsonObject = JSON.parse(json);
             if (cls == null && jsonObject == null) {
                 return null;
@@ -35,7 +46,7 @@ public class JSONDeserializer {
 
         if (jsonObject == null) {
             return null;
-        } else if (isPrimitive(jsonObject) || jsonObject.getClass() == String.class) {
+        } else if (Utils.isPrimitive(jsonObject) || jsonObject.getClass() == String.class) {
             return (T) jsonObject;
         } else if (cls.isArray()) {
             Class<?> componentType = cls.getComponentType();
@@ -46,14 +57,14 @@ public class JSONDeserializer {
             }
             return (T) array;
         } else if (jsonObject instanceof Collection && cls == Object.class) {
-            Collection collection = (Collection) newMapOrList(Collection.class);
+            Collection collection = (Collection) Utils.newMapOrList(Collection.class);
             JSONArray jsonArray = (JSONArray) jsonObject;
             for (Object o : jsonArray) {
                 collection.add(deserialize(o, Object.class));
             }
             return (T) jsonArray;
         } else if (jsonObject instanceof Map && cls == Object.class) {
-            Map m = (Map) newMapOrList(Map.class);
+            Map m = (Map) Utils.newMapOrList(Map.class);
             JSONObject jsonObj = (JSONObject) jsonObject;
             Iterator<Map.Entry> iterator = jsonObj.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -61,6 +72,13 @@ public class JSONDeserializer {
                 m.put(deserialize(entry.getKey(), Object.class), deserialize(entry.getValue(), Object.class));
             }
             return (T) m;
+        }else if (Date.class.isAssignableFrom(cls) && cls == Object.class) {
+            try {
+                return (T) sdf.parse(jsonObject.toString());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
         Field[] fields = cls.getDeclaredFields();
         T t = null;
@@ -73,22 +91,22 @@ public class JSONDeserializer {
         }
         for (Field f : fields) {
             f.setAccessible(true);
-            Class<?> declaringClass = f.getType();
+            Class<?> fieldClass = f.getType();
             Object obj = ((JSONObject) jsonObject).get(f.getName());
             if (obj == null) {
                 continue;
             }
             Object value;
-            if (declaringClass.isArray()) {
-                Class<?> componentType = declaringClass.getComponentType();
+            if (fieldClass.isArray()) {
+                Class<?> componentType = fieldClass.getComponentType();
                 JSONArray jsonArray = (JSONArray) obj;
                 Object array = Array.newInstance(componentType, jsonArray.size());
                 for (int i = 0; i < jsonArray.size(); i++) {
                     Array.set(array, i, deserialize(jsonArray.get(i), componentType));
                 }
                 value = array;
-            } else if (Collection.class.isAssignableFrom(declaringClass)) {
-                Collection collection = (Collection) newMapOrList(declaringClass);
+            } else if (Collection.class.isAssignableFrom(fieldClass)) {
+                Collection collection = (Collection) Utils.newMapOrList(fieldClass);
                 JSONArray jsonArray = (JSONArray) obj;
                 Class genericType = Object.class;
                 try {
@@ -99,8 +117,8 @@ public class JSONDeserializer {
                     collection.add(deserialize(o, genericType));
                 }
                 value = collection;
-            } else if (Map.class.isAssignableFrom(declaringClass)) {
-                Map m = (Map) newMapOrList(declaringClass);
+            } else if (Map.class.isAssignableFrom(fieldClass)) {
+                Map m = (Map) Utils.newMapOrList(fieldClass);
                 Class genericType0 = Object.class;
                 Class genericType1 = Object.class;
                 try {
@@ -125,50 +143,6 @@ public class JSONDeserializer {
             }
         }
         return t;
-    }
-
-    private static boolean isPrimitive(Object cls) {
-        return cls instanceof Boolean
-                || cls instanceof Double
-                || cls instanceof Float
-                || cls instanceof Short
-                || cls instanceof Integer
-                || cls instanceof Long
-                || cls instanceof String
-                || cls instanceof Byte
-                || cls instanceof Character;
-    }
-
-    private static <T> Object newMapOrList(Class<T> cls) {
-        T t = null;
-        if (cls.isInterface()) {
-            if (cls == Map.class) {
-                return new HashMap<>();
-            } else if (isChildOfInterface(cls, Collection.class)) {
-                return new ArrayList<>();
-            } else {
-                new RuntimeException("can not new instance.");
-            }
-        } else {
-            try {
-                t = (T) cls.newInstance();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return t;
-    }
-
-    private static boolean isChildOfInterface(Class iml, Class inter) {
-        Class[] interfaces = iml.getInterfaces();
-        for (Class cls : interfaces) {
-            if (cls == inter) {
-                return true;
-            }
-        }
-        return iml == inter;
     }
 
 }
