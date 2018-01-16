@@ -41,7 +41,7 @@ public class JSONSerializer {
                 for (Field f:fields){
                     f.setAccessible(true);
                     if ("serialVersionUID".equals(f.getName())
-                            ||"this$0".equals(f.getName())
+                            ||f.getName().startsWith("this$")
                             ||f.isAnnotationPresent(JsonIngore.class)){
                         continue;
                     }
