@@ -18,7 +18,7 @@ public class JSONSerializer {
 
     private static String serialize(Object object){
         if(object==null){
-            return null;
+            return "null";
         }else if(Utils.isPrimitive(object)){
             return object.toString();
         }else if(object.getClass()==String.class){
