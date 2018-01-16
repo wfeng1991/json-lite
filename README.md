@@ -1,2 +1,2 @@
 # json-lite
-学习json 练手项目
+简单的json parser 练手项目
