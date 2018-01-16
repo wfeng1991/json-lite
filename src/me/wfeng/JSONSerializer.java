@@ -12,7 +12,11 @@ public class JSONSerializer {
 
     private static String FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-    public static String serialize(Object object){
+    public static String toJson(Object object){
+        return serialize(object);
+    }
+
+    private static String serialize(Object object){
         if(object==null){
             return null;
         }else if(Utils.isPrimitive(object)){
@@ -61,7 +65,9 @@ public class JSONSerializer {
                         sb.append(serialize(f.getName())+":"+serialize(value)+",");
                     }
                 }
-                sb.deleteCharAt(sb.length()-1);
+                if(sb.charAt(sb.length()-1)==','){
+                    sb.deleteCharAt(sb.length()-1);
+                }
                 sb.append('}');
                 return sb.toString();
             } catch (Exception e) {
