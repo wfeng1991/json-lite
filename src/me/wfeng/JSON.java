@@ -128,7 +128,7 @@ public class JSON {
                         }
                         return sb.toString();
                     default:
-                        if (c == '}' || c == ']' || c== ',') {
+                        if (c == '}' || c == ']' || c== ','|| c== ':') {
                             position--;
                             return parseFundamentalType(sb.toString());
                         } else {
