@@ -27,59 +27,55 @@ public class JSONSerializer {
             SimpleDateFormat sdf = new SimpleDateFormat(FORMAT_PATTERN);
             return serialize(sdf.format(object));
         }else if (object.getClass().isArray()) {
-            try {
-                return serializeArray((Object[])object);
-            } catch (Exception ingore) {
-                return serializePrimaryArray(object);
-            }
+            return serializeArray(object);
         }else if(Collection.class.isAssignableFrom(object.getClass())){
-            return serializeArray(((Collection)object).toArray());
+            return serializeCollection((Collection)object);
         }else if (Map.class.isAssignableFrom(object.getClass())) {
             return serializeMap(object);
         }else {
-            Class<?> objectClass = object.getClass();
-            Field[] fields = objectClass.getDeclaredFields();
-            StringBuilder sb = new StringBuilder();
-            try {
-                sb.append('{');
-                for (Field f:fields){
-                    f.setAccessible(true);
-                    if ("serialVersionUID".equals(f.getName())
-                            ||f.getName().startsWith("this$")
-                            ||f.isAnnotationPresent(JsonIngore.class)){
-                        continue;
-                    }
-                    Class<?> fieldClass = f.getType();
-                    Object value = f.get(object);
-                    if (value==null){
-                        sb.append(serialize(f.getName())+":"+serialize(value)+",");
-                    }else if (fieldClass.isArray()) {
-                        try{
-                            sb.append(serialize(f.getName())+":"+serializeArray((Object[])value)+",");
-                        }catch (Exception ingore){
-                            sb.append(serialize(f.getName())+":"+serializePrimaryArray(value)+",");
-                        }
-                    }else if(Collection.class.isAssignableFrom(fieldClass)){
-                        sb.append(serialize(f.getName())+":"+serializeArray(((Collection)value).toArray())+",");
-                    }else if (Map.class.isAssignableFrom(fieldClass)) {
-                        sb.append(serialize(f.getName())+":"+serializeMap(value)+",");
-                    }else{
-                        sb.append(serialize(f.getName())+":"+serialize(value)+",");
-                    }
+            return serializeObject(object);
+        }
+    }
+
+    private static String serializeObject(Object object) {
+        Class<?> objectClass = object.getClass();
+        Field[] fields = objectClass.getDeclaredFields();
+        StringBuilder sb = new StringBuilder();
+        try {
+            sb.append('{');
+            for (Field f:fields){
+                f.setAccessible(true);
+                if ("serialVersionUID".equals(f.getName())
+                        ||f.getName().startsWith("this$")
+                        ||f.isAnnotationPresent(JsonIngore.class)){
+                    continue;
                 }
-                if(sb.charAt(sb.length()-1)==','){
-                    sb.deleteCharAt(sb.length()-1);
+                Class<?> fieldClass = f.getType();
+                Object value = f.get(object);
+                if (value==null){
+                    sb.append(serialize(f.getName())+":"+serialize(value)+",");
+                }else if (fieldClass.isArray()) {
+                    sb.append(serialize(f.getName())+":"+ serializeArray(value)+",");
+                }else if(Collection.class.isAssignableFrom(fieldClass)){
+                    sb.append(serialize(f.getName())+":"+ serializeCollection((Collection)value)+",");
+                }else if (Map.class.isAssignableFrom(fieldClass)) {
+                    sb.append(serialize(f.getName())+":"+serializeMap(value)+",");
+                }else{
+                    sb.append(serialize(f.getName())+":"+serialize(value)+",");
                 }
-                sb.append('}');
-                return sb.toString();
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+            if(sb.charAt(sb.length()-1)==','){
+                sb.deleteCharAt(sb.length()-1);
+            }
+            sb.append('}');
+            return sb.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         throw new RuntimeException("serialize error");
     }
 
-    private static String serializePrimaryArray(Object value) {
+    private static String serializeArray(Object value) {
         StringBuilder sb = new StringBuilder();
         sb.append('[');
         int length= Array.getLength(value);
@@ -111,13 +107,13 @@ public class JSONSerializer {
         return sb.toString();
     }
 
-    private static String serializeArray(Object[] value){
+    private static String serializeCollection(Collection value){
         StringBuilder sb = new StringBuilder();
         sb.append('[');
         for (Object o:value){
             sb.append(serialize(o)+",");
         }
-        if (value.length>0){
+        if (value.size()>0){
             sb.deleteCharAt(sb.length()-1);
         }
         sb.append(']');
