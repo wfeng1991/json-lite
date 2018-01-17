@@ -70,9 +70,8 @@ public class JSONSerializer {
             sb.append('}');
             return sb.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("serialize error",e);
         }
-        throw new RuntimeException("serialize error");
     }
 
     private static String serializeArray(Object value) {
